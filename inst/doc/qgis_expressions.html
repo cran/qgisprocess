@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Floris Vanderhaeghe &amp; Jannes Muenchow" />
+
+
+<title>How to use QGIS expressions in qgisprocess?</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">How to use QGIS expressions in
+qgisprocess?</h1>
+<h4 class="author">Floris Vanderhaeghe &amp; Jannes Muenchow</h4>
+<h4 class="date">Last updated: 2023-08-16</h4>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(qgisprocess)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(sf)</span></code></pre></div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>Many QGIS processing algorithms provide the possibility to use <a href="https://docs.qgis.org/latest/en/docs/user_manual/expressions/index.html">QGIS
+expressions</a>. If an algorithm argument expects a QGIS expression,
+this is typically marked by a button in the QGIS processing dialog that
+opens the QGIS expression builder (e.g. in
+<code>native:extractbyexpression</code>), or by a directly integrated
+QGIS expression builder (e.g. in <code>native:fieldcalculator</code>).
+Such arguments are of type <code>expression</code>, as seen in the
+output of <code>qgis_get_argument_specs()</code>.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">qgis_get_argument_specs</span>(<span class="st">&quot;native:fieldcalculator&quot;</span>) <span class="sc">|&gt;</span> <span class="fu">subset</span>(name <span class="sc">==</span> <span class="st">&quot;FORMULA&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 6</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt;   name    description qgis_type default_value available_values acceptable_values</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;   &lt;chr&gt;       &lt;chr&gt;     &lt;list&gt;        &lt;list&gt;           &lt;list&gt;           </span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; 1 FORMULA Formula     expressi… &lt;NULL&gt;        &lt;NULL&gt;           &lt;chr [1]&gt;</span></span></code></pre></div>
+<p>Secondly, one can use expressions for <em>data-defined</em>
+overriding. This means that an algorithm argument that is usually a
+fixed value (number, distance, boolean, string or color) can
+<em>also</em> take on the value of another field or the result of an
+expression. In the QGIS processing dialog, such arguments have a ‘<a href="https://docs.qgis.org/latest/en/docs/user_manual/introduction/general_tools.html#data-defined">data-defined
+override</a>’ button. An example is provided by the
+<code>DISTANCE</code> argument of <code>native:buffer</code>, for which
+we query the acceptable values below.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">qgis_get_argument_specs</span>(<span class="st">&quot;native:buffer&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">subset</span>(name <span class="sc">==</span> <span class="st">&quot;DISTANCE&quot;</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(acceptable_values) <span class="sc">|&gt;</span> </span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest</span>(<span class="at">cols =</span> acceptable_values) <span class="sc">|&gt;</span> </span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div>
+<table>
+<colgroup>
+<col width="100%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">acceptable_values</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">A numeric value</td>
+</tr>
+<tr class="even">
+<td align="left">field:FIELD_NAME to use a data defined value taken from
+the FIELD_NAME field</td>
+</tr>
+<tr class="odd">
+<td align="left">expression:SOME EXPRESSION to use a data defined value
+calculated using a custom QGIS expression</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="examples-where-the-argument-expects-a-qgis-expression" class="section level1">
+<h1>Examples where the argument expects a QGIS expression</h1>
+<p>As example data, we use a lake polygon and a set of points that have
+lake depth as attribute.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>longlake_path <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;longlake/longlake.gpkg&quot;</span>, <span class="at">package =</span> <span class="st">&quot;qgisprocess&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>longlake_depth_path <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;longlake/longlake_depth.gpkg&quot;</span>, <span class="at">package =</span> <span class="st">&quot;qgisprocess&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">nrow</span>(<span class="fu">read_sf</span>(longlake_depth_path))</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt; [1] 64</span></span></code></pre></div>
+<p>In a first example, we use a QGIS expression to filter points by
+depth. We can simply pass the expression as a string:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">qgis_run_algorithm</span>(</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>  <span class="st">&quot;native:extractbyexpression&quot;</span>,</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="at">INPUT =</span> longlake_depth_path,</span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="at">EXPRESSION =</span> <span class="st">&#39;&quot;DEPTH_M&quot; &gt; 1&#39;</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="fu">st_as_sf</span>()</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt; Using `OUTPUT = qgis_tmp_vector()`</span></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; Using `FAIL_OUTPUT = qgis_tmp_vector()`</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; Simple feature collection with 39 features and 2 fields</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; Geometry type: POINT</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; Dimension:     XY</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt; Bounding box:  xmin: 410242.8 ymin: 5083519 xmax: 411466.8 ymax: 5084691</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; Projected CRS: NAD83 / UTM zone 20N</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; # A tibble: 39 × 3</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt;    WAYPOINT_I DEPTH_M               geom</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt;         &lt;dbl&gt;   &lt;dbl&gt;        &lt;POINT [m]&gt;</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt;  1          8     1.4 (411466.8 5084488)</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt;  2         12     1.4 (411379.1 5084490)</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt;  3         17     1.4 (411292.9 5084670)</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co">#&gt;  4         19     1.5 (411290.8 5084593)</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt;  5         20     1.5 (411286.8 5084534)</span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt;  6         24     1.2 (411272.2 5084333)</span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt;  7         25     1.5 (411244.6 5084420)</span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co">#&gt;  8         27     1.6 (411220.3 5084500)</span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt;  9         29     1.7 (411205.4 5084575)</span></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co">#&gt; 10         36     1.8 (411133.2 5084691)</span></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="co">#&gt; # ℹ 29 more rows</span></span></code></pre></div>
+<p>More often, you will want to use QGIS functions in expressions, and
+look at the relationship between geometries or create new
+geometries.</p>
+<p>Let’s calculate the distance between the points and the lake border,
+and add it as an attribute to the points. For that we will use the
+<code>native:fieldcalculator</code> algorithm.</p>
+<p>We first create the lake border:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>lake_border_path <span class="ot">&lt;-</span> <span class="fu">qgis_run_algorithm</span>(</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>  <span class="st">&quot;native:polygonstolines&quot;</span>, </span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="at">INPUT =</span> longlake_path</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>) <span class="sc">|&gt;</span> </span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="fu">qgis_extract_output</span>(<span class="st">&quot;OUTPUT&quot;</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; Using `OUTPUT = qgis_tmp_vector()`</span></span></code></pre></div>
+<p>Next, build the QGIS expression. Referring to the <code>INPUT</code>
+geometry in <code>native:fieldcalculator</code> is done with the
+<code>@geometry</code> variable.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>expr <span class="ot">&lt;-</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">&quot;distance(</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="st">                     @geometry, </span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="st">                     geometry(</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="st">                       get_feature_by_id(</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="st">                         load_layer(&#39;{lake_border_path}&#39;, &#39;ogr&#39;), </span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="st">                         1</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="st">                       )</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="st">                     )</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="st">                    )&quot;</span>)</span></code></pre></div>
+<p>Referring to the lake border geometry in an expression is a bit
+trickier, since it requires several QGIS functions. The layer can be
+loaded from a filepath with the <code>load_layer()</code> function, then
+the first (and only) feature is selected with
+<code>get_feature_by_id()</code>, and the geometry of that feature is
+selected using the <code>geometry()</code> function. These steps are
+needed because the <code>distance()</code> function needs geometries to
+work on, not features, layers or filepaths.</p>
+<p>Use the QGIS expression builder to look up function documentation, or
+consult the online <a href="https://docs.qgis.org/latest/en/docs/user_manual/expressions/functions_list.html">QGIS
+function documentation</a>.</p>
+<p>Note: the <code>load_layer()</code> function is only available since
+QGIS 3.30.0! In earlier versions, you needed to refer to the layer’s
+name in an <em>existing</em> QGIS project, and refer to the project path
+in <code>qgis_run_algorithm()</code> with the special
+<code>PROJECT_PATH</code> argument. The <code>load_layer()</code>
+approach since QGIS 3.30.0 avoids the need for a QGIS project.</p>
+<p>Now we can run the algorithm:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">qgis_run_algorithm</span>(</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="st">&quot;native:fieldcalculator&quot;</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="at">INPUT =</span> longlake_depth_path,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="at">FIELD_NAME =</span> <span class="st">&quot;distance&quot;</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>  <span class="at">FORMULA =</span> expr</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>) <span class="sc">|&gt;</span> </span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  <span class="fu">st_as_sf</span>()</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; Using `FIELD_TYPE = &quot;Decimal (double)&quot;`</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; Argument `FIELD_LENGTH` is unspecified (using QGIS default value).</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; Argument `FIELD_PRECISION` is unspecified (using QGIS default value).</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; Using `OUTPUT = qgis_tmp_vector()`</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; Simple feature collection with 64 features and 3 fields</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; Geometry type: POINT</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; Dimension:     XY</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; Bounding box:  xmin: 409967.1 ymin: 5083354 xmax: 411658.7 ymax: 5084777</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt; Projected CRS: NAD83 / UTM zone 20N</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt; # A tibble: 64 × 4</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt;    WAYPOINT_I DEPTH_M distance               geom</span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt;         &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;        &lt;POINT [m]&gt;</span></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co">#&gt;  1          2     0.8     6.22 (411658.7 5084501)</span></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#&gt;  2          3     0.9    38.6  (411630.3 5084560)</span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt;  3          5     0.8    46.7  (411553.4 5084601)</span></span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a><span class="co">#&gt;  4          6     0.8    49.3  (411476.4 5084600)</span></span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="co">#&gt;  5          8     1.4   100.   (411466.8 5084488)</span></span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a><span class="co">#&gt;  6         10     0.6    25.4  (411466.4 5084410)</span></span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a><span class="co">#&gt;  7         12     1.4   140.   (411379.1 5084490)</span></span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a><span class="co">#&gt;  8         16     0.8    39.4  (411321.2 5084721)</span></span>
+<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a><span class="co">#&gt;  9         17     1.4    93.7  (411292.9 5084670)</span></span>
+<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a><span class="co">#&gt; 10         19     1.5   150.   (411290.8 5084593)</span></span>
+<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a><span class="co">#&gt; # ℹ 54 more rows</span></span></code></pre></div>
+</div>
+<div id="example-applying-a-data-defined-override" class="section level1">
+<h1>Example applying a data-defined override</h1>
+<p>Suppose that we want to create a buffer around the points with a
+dynamic radius expressed as a function of <code>DEPTH_M</code>, e.g. 10
+times the depth at each point. We will use <code>native:buffer</code>
+for that purpose. Note: applying a data-defined override with
+<strong>qgisprocess</strong> is only possible since QGIS 3.30.0!</p>
+<p>Because <code>DISTANCE</code> by default expects a numeric value, you
+have to use the prefix <code>expression:</code> if you want to pass an
+expression string. Double quotes are used in QGIS expressions to denote
+fields (attributes), but you can also omit them.</p>
+<p>Let’s try:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>buffer <span class="ot">&lt;-</span> <span class="fu">qgis_run_algorithm</span>(</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  <span class="st">&quot;native:buffer&quot;</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>  <span class="at">INPUT =</span> longlake_depth_path,</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="at">DISTANCE =</span> <span class="st">&#39;expression: &quot;DEPTH_M&quot; * 10&#39;</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>) <span class="sc">|&gt;</span> </span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>  <span class="fu">st_as_sf</span>()</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="co">#&gt; Argument `SEGMENTS` is unspecified (using QGIS default value).</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="co">#&gt; Using `END_CAP_STYLE = &quot;Round&quot;`</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="co">#&gt; Using `JOIN_STYLE = &quot;Round&quot;`</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="co">#&gt; Argument `MITER_LIMIT` is unspecified (using QGIS default value).</span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="co">#&gt; Argument `DISSOLVE` is unspecified (using QGIS default value).</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co">#&gt; Argument `SEPARATE_DISJOINT` is unspecified (using QGIS default value).</span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="co">#&gt; Using `OUTPUT = qgis_tmp_vector()`</span></span></code></pre></div>
+<p>So from the 64 points we have created 64 polygons:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">st_geometry_type</span>(buffer) <span class="sc">|&gt;</span> <span class="fu">as.character</span>() <span class="sc">|&gt;</span> <span class="fu">table</span>()</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="co">#&gt; MULTIPOLYGON </span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co">#&gt;           64</span></span></code></pre></div>
+<p>Plot the result:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>oldpar <span class="ot">&lt;-</span> <span class="fu">par</span>(<span class="at">mar =</span> <span class="fu">rep</span>(<span class="fl">0.1</span>, <span class="dv">4</span>))</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">plot</span>(<span class="fu">read_sf</span>(lake_border_path) <span class="sc">|&gt;</span> <span class="fu">st_geometry</span>())</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="fu">plot</span>(buffer[, <span class="st">&quot;DEPTH_M&quot;</span>], <span class="at">add =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">par</span>(oldpar)</span></code></pre></div>
+<p>If you just want to refer to the value of another attribute, then you
+can also use the <code>field:</code> prefix instead, <em>without</em>
+double quotes around the attribute name and <em>without</em> spaces:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">qgis_run_algorithm</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>  <span class="st">&quot;native:buffer&quot;</span>,</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>  <span class="at">INPUT =</span> longlake_depth_path,</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a>  <span class="at">DISTANCE =</span> <span class="st">&quot;field:DEPTH_M&quot;</span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a>) <span class="sc">|&gt;</span> </span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a>  <span class="fu">st_as_sf</span>()</span></code></pre></div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

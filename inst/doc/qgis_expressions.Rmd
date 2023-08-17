@@ -1,0 +1,29 @@
+---
+title: "How to use QGIS expressions in qgisprocess?"
+author: "Floris Vanderhaeghe & Jannes Muenchow"
+date: "Last updated: 2023-08-16"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{How to use QGIS expressions in qgisprocess?}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+can_build <- qgisprocess::has_qgis() &&
+  package_version(qgisprocess::qgis_version(full = FALSE)) >= "3.30.0" &&
+  requireNamespace("sf", quietly = TRUE)
+```
+
+```{r child=if (can_build) file.path(rprojroot::find_root(rprojroot::is_r_package), "man/vignette_childs/_qgis_expressions.Rmd")}
+```
+
+```{r eval=!can_build, echo=FALSE, results="asis"}
+cat("This vignette has been built in absence of a QGIS installation with version >= 3.30.0, or in absence of the sf package.\n\n")
+cat("Read it online at <https://r-spatial.github.io/qgisprocess/articles/qgis_expressions.html>.")
+```
+
