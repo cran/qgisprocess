@@ -1,8 +1,10 @@
-#' Detect QGIS installations that provide the 'qgis_process' command
+#' Detect QGIS installations with 'qgis_process' on Windows and macOS
 #'
 #' Discovers existing 'qgis_process' executables on the system and returns their
 #' filepath.
 #' Only available for Windows and macOS systems.
+#' `qgis_detect_paths()` is a shortcut to `qgis_detect_windows_paths()` on
+#' Windows and `qgis_detect_macos_paths()` on macOS.
 #'
 #' @concept functions to manage and explore QGIS and qgisprocess
 #'
@@ -16,15 +18,33 @@
 #'
 #' @param drive_letter The drive letter on which to search. By default,
 #'   this is the same drive letter as the R executable.
+#'   Only applicable to Windows.
 #'
 #' @returns A character vector of possible paths to the 'qgis_process'
 #' executable.
 #' @export
 #'
 #' @examples
-#' if (.Platform$OS.type == "windows") qgis_detect_windows_paths()
-#' if (Sys.info()["sysname"] == "Darwin") qgis_detect_macos_paths()
-#'
+#' if (.Platform$OS.type == "windows") {
+#'   qgis_detect_paths()
+#'   identical(qgis_detect_windows_paths(), qgis_detect_paths())
+#' }
+#' if (Sys.info()["sysname"] == "Darwin") {
+#'   qgis_detect_paths()
+#'   identical(qgis_detect_macos_paths(), qgis_detect_paths())
+#' }
+qgis_detect_paths <- function(drive_letter = strsplit(R.home(), ":")[[1]][1]) {
+  if (is_windows()) {
+    qgis_detect_windows_paths(drive_letter = drive_letter)
+  } else if (is_macos()) {
+    qgis_detect_macos_paths()
+  } else {
+    abort("Can use `qgis_detect_paths()` on Windows and macOS only.")
+  }
+}
+
+#' @rdname qgis_detect_paths
+#' @export
 qgis_detect_windows_paths <- function(drive_letter = strsplit(R.home(), ":")[[1]][1]) {
   if (!is_windows()) {
     abort("Can't use `qgis_detect_windows_paths()` on a non-windows platform.")
@@ -39,17 +59,18 @@ qgis_detect_windows_paths <- function(drive_letter = strsplit(R.home(), ":")[[1]
   posssible_locs_win_df <- expand.grid(
     qgis = c(
       list.files(glue("{ drive_letter }:/Program Files"), "QGIS*", full.names = TRUE),
-      file.path(glue("{ drive_letter }:/"), "OSGeo4W64"),
-      file.path(glue("{ drive_letter }:/"), "OSGeo4W")
+      file.path(glue("{ drive_letter }:"), "OSGeo4W64"),
+      file.path(glue("{ drive_letter }:"), "OSGeo4W")
     ),
     file = file.path("bin", bat_files)
   )
 
   possible_locs_win <- file.path(posssible_locs_win_df$qgis, posssible_locs_win_df$file)
-  possible_locs_win[file.exists(possible_locs_win)]
+  possible_locs_win <- possible_locs_win[file.exists(possible_locs_win)]
+  sort_paths(possible_locs_win)
 }
 
-#' @rdname qgis_detect_windows_paths
+#' @rdname qgis_detect_paths
 #' @export
 qgis_detect_macos_paths <- function() {
   if (!is_macos()) {
@@ -61,7 +82,8 @@ qgis_detect_macos_paths <- function() {
     "Contents/MacOS/bin/qgis_process"
   )
 
-  possible_locs_mac[file.exists(possible_locs_mac)]
+  possible_locs_mac <- possible_locs_mac[file.exists(possible_locs_mac)]
+  sort_paths(possible_locs_mac)
 }
 
 #' @keywords internal
@@ -73,4 +95,24 @@ is_macos <- function() {
 #' @keywords internal
 is_windows <- function() {
   .Platform$OS.type == "windows"
+}
+
+#' @keywords internal
+sort_paths <- function(x) {
+  assert_that(is.character(x))
+  extracted <- extract_version_from_paths(x)
+  indexes_version <- order(
+    as.package_version(extracted[!is.na(extracted)]),
+    decreasing = TRUE
+  )
+  indexes <- c(
+    which(!is.na(extracted))[indexes_version],
+    which(is.na(extracted))
+  )
+  x[indexes]
+}
+
+#' @keywords internal
+extract_version_from_paths <- function(x) {
+  stringr::str_extract(x, "\\d{1,2}\\.\\d+(?:\\.\\d+)?(?=/)")
 }

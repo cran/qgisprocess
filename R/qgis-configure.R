@@ -145,22 +145,82 @@ qgis_configure <- function(quiet = FALSE, use_cached_data = FALSE) {
 
           # CACHE CONDITION: qgis_process is indeed available in the cached path
 
-          tryCatch(
-            {
-              qgis_run(path = cached_data$path)
-            },
-            error = function(e) {
-              if (quiet) message()
-              abort(
-                glue(
-                  "'{cached_data$path}' (cached path) is not available anymore.\n",
-                  "Will try to reconfigure qgisprocess and build new cache ..."
-                )
+          outcome <- try(qgis_run(path = cached_data$path), silent = TRUE)
+          if (inherits(outcome, "try-error")) {
+            if (quiet) packageStartupMessage()
+            packageStartupMessage(
+              glue(
+                "'{cached_data$path}' (cached path) is not available anymore.\n",
+                "Will try to reconfigure qgisprocess and build new cache ..."
               )
-              qgis_reconfigure(cache_data_file = cache_data_file, quiet = quiet)
-              return(invisible(has_qgis()))
+            )
+            qgis_reconfigure(cache_data_file = cache_data_file, quiet = quiet)
+            return(invisible(has_qgis()))
+          }
+
+          # CACHE CONDITION: the path element does not contradict the
+          # environment variable/option to automatically switch to a newer
+          # available QGIS version
+          if (is_windows() || is_macos()) {
+            opt <- getOption(
+              "qgisprocess.detect_newer_qgis",
+              Sys.getenv("R_QGISPROCESS_DETECT_NEWER_QGIS")
+            )
+            assert_that(
+              assertthat::is.flag(opt) ||
+                (assertthat::is.string(opt) && opt %in% c("", "TRUE", "FALSE", "true", "false")),
+              msg = "Option 'qgisprocess.detect_newer_qgis' must be 'TRUE' or 'FALSE'."
+            )
+            if (identical(opt, "")) opt <- NA
+            opt || grepl("TRUE|true", opt)
+
+            first_qgis <- qgis_detect_paths()[1]
+            newer_available <- !is.na(extract_version_from_paths(first_qgis)) &&
+              !identical(cached_data$path, first_qgis)
+
+            if (isTRUE(opt) && isTRUE(newer_available) && interactive()) {
+              packageStartupMessage()
+              packageStartupMessage(glue(
+                "A newer QGIS installation seems to be available: ",
+                "{extract_version_from_paths(first_qgis)}."
+              ))
+              answer <- ""
+              while (!grepl("^[Yy](?:[Ee][Ss])?$|^[Nn](?:[Oo])?$", answer)) {
+                answer <- readline("Do you want to try it and rebuild the cache? (y/n) ")
+              }
+              if (grepl("^[Yy]", answer)) {
+                newer_ok <- FALSE
+                tryCatch(
+                  {
+                    qgis_run(path = first_qgis)
+                    newer_ok <- TRUE
+                  },
+                  error = function(e) {
+                    packageStartupMessage(
+                      glue(
+                        "'{first_qgis}' does not work as expected.\n",
+                        "So will not try it further."
+                      )
+                    )
+                  }
+                )
+                if (newer_ok) {
+                  packageStartupMessage(
+                    "Will try to reconfigure qgisprocess and build new cache ..."
+                  )
+                  qgis_reconfigure(cache_data_file = cache_data_file, quiet = quiet)
+                  return(invisible(has_qgis()))
+                }
+              } else if (!quiet) {
+                packageStartupMessage(
+                  "\nNOTE: if you don't want to autodetect QGIS version updates ",
+                  "in the future, unset the qgisprocess.detect_newer_qgis ",
+                  "option or the R_QGISPROCESS_DETECT_NEWER_QGIS environment ",
+                  "variable."
+                )
+              }
             }
-          )
+          }
 
           # CACHE CONDITION: the cached QGIS version equals the one reported by
           # qgis_process
@@ -291,7 +351,21 @@ qgis_reconfigure <- function(cache_data_file, quiet = FALSE) {
   path <- qgis_path(query = TRUE, quiet = quiet)
   if (!quiet) message()
 
-  version <- qgis_version(query = TRUE, quiet = quiet)
+  tryCatch(
+    {
+      version <- qgis_version(query = TRUE, quiet = quiet)
+    },
+    error = function(e) {
+      message(glue(
+        "\n\nATTENTION: the QGIS version could not be queried. ",
+        "You will loose some functionality.\n",
+        "You may want to run `qgis_version(query = TRUE)` followed by ",
+        "`qgis_configure()`; see its documentation.\n",
+        "Error message was:\n\n{e}\n",
+        ifelse("stderr" %in% names(e) && nchar(e$stderr) > 0, e$stderr, "")
+      ))
+    }
+  )
 
   use_json_output <- qgis_using_json_output(query = TRUE, quiet = quiet)
 
@@ -300,32 +374,62 @@ qgis_reconfigure <- function(cache_data_file, quiet = FALSE) {
     "JSON for input serialization."
   )
 
-  plugins <- qgis_plugins(query = TRUE, quiet = quiet, msg = FALSE)
-
-  algorithms <- qgis_algorithms(query = TRUE, quiet = quiet)
-
-  if (!quiet) message_disabled_plugins(plugins, prepend_newline = TRUE)
-
-  if (!quiet) message(glue("\n\nSaving configuration to '{cache_data_file}'"))
-
-  try({
-    if (!dir.exists(dirname(cache_data_file))) {
-      dir.create(dirname(cache_data_file), recursive = TRUE)
+  tryCatch(
+    {
+      plugins <- qgis_plugins(query = TRUE, quiet = quiet, msg = FALSE)
+    },
+    error = function(e) {
+      message(glue(
+        "\n\nATTENTION: the QGIS plugins could not be queried. ",
+        "You will loose some functionality.\n",
+        "You may want to (re)run `qgis_configure()`; see its documentation.\n",
+        "Error message was:\n\n{e}\n",
+        ifelse("stderr" %in% names(e) && nchar(e$stderr) > 0, e$stderr, "")
+      ))
     }
+  )
 
-    saveRDS(
-      list(
-        path = path,
-        version = version,
-        algorithms = algorithms,
-        plugins = plugins,
-        use_json_output = use_json_output
-      ),
-      cache_data_file
-    )
-  })
+  tryCatch(
+    {
+      algorithms <- qgis_algorithms(query = TRUE, quiet = quiet)
+    },
+    error = function(e) {
+      message(glue(
+        "\n\nATTENTION: the QGIS algorithms could not be queried. ",
+        "You will loose some functionality.\n",
+        "You may want to (re)run `qgis_configure()`; see its documentation.\n",
+        "Error message was:\n\n{e}\n",
+        ifelse("stderr" %in% names(e) && nchar(e$stderr) > 0, e$stderr, "")
+      ))
+    }
+  )
 
-  if (!quiet) message_inspect_cache()
+  if (!quiet && exists("plugins")) message_disabled_plugins(plugins, prepend_newline = TRUE)
+
+  if (has_qgis()) {
+    if (!quiet) message(glue("\n\nSaving configuration to '{cache_data_file}'"))
+
+    try({
+      if (!dir.exists(dirname(cache_data_file))) {
+        dir.create(dirname(cache_data_file), recursive = TRUE)
+      }
+
+      saveRDS(
+        list(
+          path = path,
+          version = version,
+          algorithms = algorithms,
+          plugins = plugins,
+          use_json_output = use_json_output
+        ),
+        cache_data_file
+      )
+    })
+
+    if (!quiet) message_inspect_cache()
+  } else if (!quiet) {
+    message(config_problem_msg)
+  }
 }
 
 

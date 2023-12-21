@@ -99,13 +99,28 @@ qgis_plugins <- function(
 #' @keywords internal
 qgis_query_plugins <- function(quiet = FALSE) {
   if (qgis_using_json_output()) {
-    out <- qgis_run(args = c("plugins", "--json"))$stdout
-    pluginlist <- jsonlite::fromJSON(out)$plugins
+    result <- qgis_run(args = c("plugins", "--json"))
+    if (nchar(result$stderr) > 0L) {
+      message(
+        "\nStandard error message from 'qgis_process':\n",
+        result$stderr,
+        "\n"
+      )
+    }
+    pluginlist <- jsonlite::fromJSON(result$stdout)$plugins
     plugins <- tibble::enframe(pluginlist)
     plugins$value <- unlist(plugins$value, use.names = FALSE)
     colnames(plugins) <- c("name", "enabled")
   } else {
-    lines <- readLines(textConnection(qgis_run("plugins")$stdout))
+    result <- qgis_run("plugins")
+    if (nchar(result$stderr) > 0L) {
+      message(
+        "\nStandard error message from 'qgis_process':\n",
+        result$stderr,
+        "\n"
+      )
+    }
+    lines <- readLines(textConnection(result$stdout))
     pluginvec <- stringr::str_extract(lines, "^\\*?\\s+\\w+")
     pluginvec <- pluginvec[!is.na(pluginvec)]
     plugins <- tibble::tibble(
@@ -192,7 +207,7 @@ handle_plugins <- function(names = NULL, quiet = FALSE, mode) {
   if (mode == "enable") for (p in names) enable_plugin(p, quiet = quiet)
   if (mode == "disable") for (p in names) disable_plugin(p, quiet = quiet)
 
-  if (!quiet) message("\nRebuilding cache to reflect these changes ...\n")
+  if (!quiet) message("\nRebuilding cache to reflect current plugin state ...\n")
   qgis_configure(use_cached_data = FALSE, quiet = quiet)
 
   invisible(qgis_plugins())
@@ -209,8 +224,8 @@ enable_plugin <- function(name, quiet = FALSE) {
     },
     error = function(e) {
       message(glue(
-        "'{name}' was not successfully enabled. Error message was: ",
-        e$stderr
+        "'{name}' was not successfully enabled. Error message was:\n\n{e}\n",
+        ifelse("stderr" %in% names(e) && nchar(e$stderr) > 0, e$stderr, "")
       ))
     }
   )
@@ -227,8 +242,8 @@ disable_plugin <- function(name, quiet = FALSE) {
     },
     error = function(e) {
       message(glue(
-        "'{name}' was not successfully disabled. Error message was: ",
-        e$stderr
+        "'{name}' was not successfully disabled. Error message was:\n\n{e}\n",
+        ifelse("stderr" %in% names(e) && nchar(e$stderr) > 0, e$stderr, "")
       ))
     }
   )

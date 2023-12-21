@@ -7,6 +7,9 @@
 
 <!-- badges: start -->
 
+[![CRAN
+status](https://www.r-pkg.org/badges/version/qgisprocess)](https://CRAN.R-project.org/package=qgisprocess)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8260794.svg)](https://doi.org/10.5281/zenodo.8260794)
 [![R-CMD-check](https://github.com/r-spatial/qgisprocess/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/r-spatial/qgisprocess/actions/workflows/R-CMD-check.yaml)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
@@ -71,8 +74,8 @@ reconfigure the package, or just
 ``` r
 library(qgisprocess)
 #> Attempting to load the package cache ... Success!
-#> QGIS version: 3.32.1-Lima
-#> Having access to 1868 algorithms from 13 QGIS processing providers.
+#> QGIS version: 3.34.1-Prizren
+#> Having access to 2084 algorithms from 19 QGIS processing providers.
 #> Run `qgis_configure(use_cached_data = TRUE)` to reload cache and get more details.
 ```
 
@@ -133,7 +136,7 @@ result <- qgis_run_algorithm(
 result
 #> <Result of `qgis_run_algorithm("native:buffer", ...)`>
 #> List of 1
-#>  $ OUTPUT: 'qgis_outputVector' chr "/tmp/RtmpYOeeXA/file9c8d1ec488d8/file9c8d3db16d1d.gpkg"
+#>  $ OUTPUT: 'qgis_outputVector' chr "/tmp/RtmpQlJBjV/file1046b3f8fd4a3/file1046b37e1f09.gpkg"
 
 output_sf <- sf::st_as_sf(result)
 plot(sf::st_geometry(output_sf))
@@ -142,23 +145,6 @@ plot(sf::st_geometry(output_sf))
 <img src="man/figures/README-buffer-1.png" width="60%" />
 
 ### Some tips
-
-You can read the help associated with an algorithm using
-`qgis_show_help()`.
-
-``` r
-qgis_show_help("native:buffer")
-```
-
-It may also be useful to run an algorithm in the QGIS GUI to determine
-how the various input values are translated to string processing
-arguments. This can be done using the ‘Advanced’ dropdown, by copying
-either the `qgis_process` command string or the JSON string:
-
-![](man/figures/copy_as_json.png)
-
-Note that the JSON string can be passed directly to
-`qgis_run_algorithm()`!
 
 You can search for algorithms with `qgis_search_algorithms()` (string
 matching with regex).
@@ -181,24 +167,31 @@ qgis_search_algorithms(algorithm = "buffer", group = "[Vv]ector")
 #> 11 sagang   SAGA Next Gen     Vector general       sagang:shape… Shapes buffer
 ```
 
+You can read the help associated with an algorithm using
+`qgis_show_help()`.
+
+``` r
+qgis_show_help("native:buffer")
+```
+
 A full list of available algorithms is returned by `qgis_algorithms()`.
 
 ``` r
 qgis_algorithms()
-#> # A tibble: 1,868 × 24
-#>    provider         provider_title    algorithm     algorithm_id algorithm_title
-#>    <chr>            <chr>             <chr>         <chr>        <chr>          
-#>  1 3d               QGIS (3D)         3d:tessellate tessellate   Tessellate     
-#>  2 cartographytools Cartography tools cartographyt… averagelines Average linest…
-#>  3 cartographytools Cartography tools cartographyt… collapsedua… Collapse dual …
-#>  4 cartographytools Cartography tools cartographyt… removecross… Remove cross r…
-#>  5 cartographytools Cartography tools cartographyt… removeculde… Remove cul-de-…
-#>  6 cartographytools Cartography tools cartographyt… removeround… Remove roundab…
-#>  7 gdal             GDAL              gdal:aspect   aspect       Aspect         
-#>  8 gdal             GDAL              gdal:assignp… assignproje… Assign project…
-#>  9 gdal             GDAL              gdal:bufferv… buffervecto… Buffer vectors 
-#> 10 gdal             GDAL              gdal:buildvi… buildvirtua… Build virtual …
-#> # ℹ 1,858 more rows
+#> # A tibble: 2,084 × 24
+#>    provider  provider_title algorithm               algorithm_id algorithm_title
+#>    <chr>     <chr>          <chr>                   <chr>        <chr>          
+#>  1 3d        QGIS (3D)      3d:tessellate           tessellate   Tessellate     
+#>  2 NetworkGT NetworkGT      NetworkGT:1D Flow       1D Flow      1D Flow        
+#>  3 NetworkGT NetworkGT      NetworkGT:2D Flow       2D Flow      2D Flow        
+#>  4 NetworkGT NetworkGT      NetworkGT:Aperture      Aperture     Aperture       
+#>  5 NetworkGT NetworkGT      NetworkGT:Branches and… Branches an… Branches and N…
+#>  6 NetworkGT NetworkGT      NetworkGT:Clusters      Clusters     Define Clusters
+#>  7 NetworkGT NetworkGT      NetworkGT:Configure     Configure    Configure Netw…
+#>  8 NetworkGT NetworkGT      NetworkGT:Connect Y No… Connect Y N… Connect Y Nodes
+#>  9 NetworkGT NetworkGT      NetworkGT:Contour Grid  Contour Grid Contour Grid   
+#> 10 NetworkGT NetworkGT      NetworkGT:Define Fract… Define Frac… Define Fractur…
+#> # ℹ 2,074 more rows
 #> # ℹ 19 more variables: provider_can_be_activated <lgl>,
 #> #   provider_is_active <lgl>, provider_long_name <chr>, provider_version <chr>,
 #> #   provider_warning <chr>, can_cancel <lgl>, deprecated <lgl>, group <chr>,
@@ -206,6 +199,16 @@ qgis_algorithms()
 #> #   short_description <chr>, tags <list>, default_raster_file_extension <chr>,
 #> #   default_vector_file_extension <chr>, …
 ```
+
+It may also be useful to run an algorithm in the QGIS GUI to determine
+how the various input values are translated to string processing
+arguments. This can be done using the ‘Advanced’ dropdown, by copying
+either the `qgis_process` command string or the JSON string:
+
+![](man/figures/copy_as_json.png)
+
+Note that the JSON string can be passed directly to
+`qgis_run_algorithm()`!
 
 ## Code of Conduct
 
@@ -219,11 +222,11 @@ By contributing to this project, you agree to abide by its terms.
 ### Presentations
 
 - FOSS4G 2023:
-  [slides](https://florisvdh.github.io/foss4g-2023-qgisprocess/) (talk
-  follows later)
+  [slides](https://florisvdh.github.io/foss4g-2023-qgisprocess/) &
+  [video](https://www.youtube.com/watch?v=Qt5DzWThWqI)
 - FOSS4G 2021:
   [slides](https://dewey.dunnington.ca/slides/qgisprocess2021/) &
-  [talk](https://www.youtube.com/watch?v=iA0OQ2Icn6Y&t=1912s)
+  [video](https://www.youtube.com/watch?v=iA0OQ2Icn6Y&t=1912s)
 
 ### Further reading
 

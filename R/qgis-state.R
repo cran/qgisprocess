@@ -69,7 +69,12 @@ qgis_query_path <- function(quiet = FALSE) {
         return(path)
       },
       error = function(e) {
-        if (!quiet) message(as.character(e))
+        if (!quiet) message(glue(
+          "Running '{ path }' was not successful. ",
+          "Please check the qgisprocess.path option.\n",
+          "Error message was:\n\n{e}\n",
+          ifelse("stderr" %in% names(e) && nchar(e$stderr) > 0, e$stderr, "")
+        ))
       }
     )
   } else {
@@ -86,7 +91,12 @@ qgis_query_path <- function(quiet = FALSE) {
         return(path)
       },
       error = function(e) {
-        if (!quiet) message(as.character(e))
+        if (!quiet) message(glue(
+          "Running '{ path }' was not successful. ",
+          "Please check the R_QGISPROCESS_PATH environment variable.\n",
+          "Error message was:\n\n{e}\n",
+          ifelse("stderr" %in% names(e) && nchar(e$stderr) > 0, e$stderr, "")
+        ))
       }
     )
   } else {
@@ -134,7 +144,9 @@ qgis_query_path <- function(quiet = FALSE) {
         if (!quiet) message("Success!")
         return(path)
       },
-      error = function(e) {}
+      error = function(e) {
+        message(glue("'{ path }' failed to execute."))
+      }
     )
   }
 
@@ -164,6 +176,8 @@ qgis_version <- function(query = FALSE, quiet = TRUE, full = TRUE, debug = FALSE
       return(qgisprocess_cache$version)
     }
     print(qgisprocess_cache$version)
+    message()
+    message("Using qgisprocess ", getNamespaceVersion("qgisprocess"))
     message()
     message("Versions reported by 'qgis_process':")
     message("------------------------------------")
@@ -283,6 +297,7 @@ qgis_using_json_input <- function() {
 
   if (identical(opt, "")) {
     qgis_using_json_output() &&
+      !is.null(qgis_version()) &&
       (package_version(qgis_version(full = FALSE)) >= "3.23.0")
   } else {
     isTRUE(opt) || identical(opt, "true")

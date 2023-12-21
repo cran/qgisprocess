@@ -1,6 +1,6 @@
 Package: qgisprocess
 Title: Use 'QGIS' Processing Algorithms
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: c(
     person("Dewey", "Dunnington", , "dewey@fishandwhistle.net", role = "aut",
            comment = c(ORCID = "0000-0002-9415-4582", affiliation = "Voltron Data")),
@@ -42,11 +42,13 @@ Config/checklist/keywords: R; package; QGIS
 Encoding: UTF-8
 Language: en-GB
 RoxygenNote: 7.2.3
-SystemRequirements: 'QGIS' latest or long-term release (>= 3.28). Older
-        'QGIS' releases are not officially supported, but may work
-        since 'QGIS' 3.16.
+SystemRequirements: 'QGIS' latest or long-term release, currently
+        supported according to the 'QGIS' release schedule
+        (<https://www.qgis.org/en/site/getinvolved/development/roadmap.html>).
+        Older 'QGIS' releases are not officially supported, but may
+        work since 'QGIS' 3.16.
 NeedsCompilation: no
-Packaged: 2023-08-17 09:25:05 UTC; floris
+Packaged: 2023-12-20 17:32:37 UTC; floris
 Author: Dewey Dunnington [aut] (<https://orcid.org/0000-0002-9415-4582>,
     Voltron Data),
   Floris Vanderhaeghe [aut, cre]
@@ -61,4 +63,4 @@ Author: Dewey Dunnington [aut] (<https://orcid.org/0000-0002-9415-4582>,
     (https://www.inbo.be/en/)
 Maintainer: Floris Vanderhaeghe <floris.vanderhaeghe@inbo.be>
 Repository: CRAN
-Date/Publication: 2023-08-17 15:10:02 UTC
+Date/Publication: 2023-12-21 01:20:02 UTC

@@ -21,12 +21,18 @@ qgis_pkgcache_file <- function() {
 #'
 #' @param type A string; either `"all"`, `"package"` or `"help"`.
 #' This selects the type of cache files to delete.
-#' @param age_days A number that expresses a cache file's age in days that must
-#' be exceeded for it to be deleted, with age referring to its last
-#' modification date.
+#' @param age_days A number that expresses a cache file's age that must
+#' be exceeded for it to be deleted, with age defined as days elapsed since the
+#' file's last modification date.
 #' The default value of 90 days can also be changed with the option
 #' `qgisprocess.cachefiles_days_keep` or the  environment variable
 #' `R_QGISPROCESS_CACHEFILES_DAYS_KEEP`.
+#' @param startup Logical.
+#' Is this command being run while loading the package?
+#' @inheritParams qgis_path
+#'
+#' @note
+#' This is an internal function.
 #'
 #' @keywords internal
 qgis_delete_old_cachefiles <- function(
@@ -88,8 +94,8 @@ qgis_delete_old_cachefiles <- function(
     error = function(e) {
       message(glue(
         "Cache files older than {age_days} days could not be deleted. ",
-        "Error message was: ",
-        e$stderr
+        "Error message was:\n\n{e}\n",
+        ifelse("stderr" %in% names(e) && nchar(e$stderr) > 0, e$stderr, "")
       ))
     }
   )
