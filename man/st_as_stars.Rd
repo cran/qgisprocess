@@ -7,11 +7,11 @@
 \alias{st_as_stars.qgis_result}
 \title{Convert a qgis_result object or one of its elements to a stars object}
 \usage{
-st_as_stars.qgis_outputRaster(x, ...)
+\method{st_as_stars}{qgis_outputRaster}(x, ...)
 
-st_as_stars.qgis_outputLayer(x, ...)
+\method{st_as_stars}{qgis_outputLayer}(x, ...)
 
-st_as_stars.qgis_result(x, ...)
+\method{st_as_stars}{qgis_result}(x, ...)
 }
 \arguments{
 \item{x}{A \code{qgis_result} object from \code{\link[=qgis_run_algorithm]{qgis_run_algorithm()}} or a
@@ -27,10 +27,6 @@ Convert a qgis_result object or one of its elements to a stars object
 }
 \details{
 The stars package must be loaded explicitly to use these methods.
-}
-\note{
-Just use \code{st_as_stars()} in R scripts, it will use the correct
-method.
 }
 \examples{
 \dontshow{if (has_qgis() && requireNamespace("stars", quietly = TRUE)) (if (getRversion() >= "3.4") withAutoprint else force)(\{ # examplesIf}

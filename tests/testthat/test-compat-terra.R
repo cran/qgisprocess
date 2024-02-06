@@ -78,6 +78,15 @@ test_that("terra argument coercers work for locally created SpatVector", {
     x = c("POINT (7e5 7e5)", "POINT (6e5 6.5e5)"),
     crs = "EPSG:3812"
   )
+
+  skip_if_not( # false positive in r-universe R-oldrel on macOS (specific to https://github.com/r-universe/r-spatial)
+    identical(
+      as.character(terra::crs(obj[1, ], describe = TRUE)[, c("authority", "code")]),
+      c("EPSG", "3812")
+    ),
+    "terra not properly working with EPSG in this setup"
+  )
+
   expect_error(
     as_qgis_argument(obj),
     "Can't convert 'SpatVector' object"
@@ -146,14 +155,18 @@ test_that("terra argument coercers work for SpatVector referring to a file", {
     "exactly one row and the geometry must be a point"
   )
 
-  # check effect of resetting CRS
-  obj2 <- obj
-  terra::crs(obj2) <- NA
-  res <- expect_message(
-    as_qgis_argument(obj2, qgis_argument_spec(qgis_type = "vector")),
-    "Rewriting.*since its CRS has been set to another value"
-  )
-  expect_s3_class(res, "qgis_tempfile_arg")
+  if (packageVersion("terra") <= "1.7.65") {
+    # check effect of resetting CRS
+    # In terra > 1.7-65, the source is dropped from the object
+    # when CRS is reset, so no CRS comparison will be attempted.
+    obj2 <- obj
+    terra::crs(obj2) <- NA
+    res <- expect_message(
+      as_qgis_argument(obj2, qgis_argument_spec(qgis_type = "vector")),
+      "Rewriting.*since its CRS has been set to another value"
+    )
+    expect_s3_class(res, "qgis_tempfile_arg")
+  }
 
   # check effect of changed attribute names
   obj2 <- obj
@@ -230,8 +243,10 @@ test_that("terra argument coercers work for SpatVectorProxy", {
     as_qgis_argument(obj, qgis_argument_spec(qgis_type = "point")),
     "exactly one row and the geometry must be a point"
   )
+})
 
-  # check behaviour for qgis_type = "point"
+test_that("terra argument coercer for SpatVectorProxy works for qgis_type 'point'", {
+  skip_if_not_installed("terra")
   tmp_file <- qgis_tmp_vector()
   withr::local_file(tmp_file)
   terra::writeVector(
@@ -242,6 +257,15 @@ test_that("terra argument coercers work for SpatVectorProxy", {
     tmp_file
   )
   obj <- terra::vect(tmp_file, proxy = TRUE)
+
+  skip_if_not( # false positive in r-universe R-oldrel on macOS (specific to https://github.com/r-universe/r-spatial)
+    identical(
+      as.character(terra::crs(obj, describe = TRUE)[, c("authority", "code")]),
+      c("EPSG", "3812")
+    ),
+    "terra not properly working with EPSG in this setup"
+  )
+
   expect_match(
     as_qgis_argument(obj, qgis_argument_spec(qgis_type = "point")),
     "^[\\de\\+]+,[\\de\\+]+\\[\\w+:\\d+\\]$",

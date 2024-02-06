@@ -79,8 +79,11 @@ as_qgis_argument <- function(x, spec = qgis_argument_spec(), use_json_input = FA
 # serialized as JSON instead of serialized as a command-line argument.
 # @param .algorithm_arguments The result of [qgis_get_argument_specs()]
 #' @keywords internal
-qgis_sanitize_arguments <- function(algorithm, ..., .algorithm_arguments = qgis_get_argument_specs(algorithm),
-                                    .use_json_input = FALSE) {
+qgis_sanitize_arguments <- function(
+    algorithm,
+    ...,
+    .algorithm_arguments = qgis_get_argument_specs(algorithm, check_deprecation = FALSE),
+    .use_json_input = FALSE) {
   dots <- rlang::list2(...)
   if (length(dots) > 0 && !rlang::is_named(dots)) {
     abort("All ... arguments to `qgis_sanitize_arguments()` must be named.")
@@ -501,7 +504,7 @@ qgis_argument_spec <- function(algorithm = NA_character_, name = NA_character_,
 
 #' @keywords internal
 qgis_argument_spec_by_name <- function(algorithm, name,
-                                       .algorithm_arguments = qgis_get_argument_specs(algorithm)) {
+                                       .algorithm_arguments = qgis_get_argument_specs(algorithm, check_deprecation = FALSE)) {
   # These are special-cased at the command-line level, so they don't have
   # types defined in the help file. Here, we create two special types
   # ELLIPSOID and PROJECT_PATH.
@@ -543,6 +546,10 @@ qgis_argument_spec_by_name <- function(algorithm, name,
 #' (see [qgis_using_json_input()]), where it can be interchanged with a named `list()`.
 #' It can only be used for arguments requiring _named_ lists.
 #' Since it applies strict validation rules, it is recommended above `list()`.
+#'
+#' Some QGIS argument types that need a compount object are the `multilayer`,
+#' `aggregates`, `fields_mapping`, `tininputlayers` and
+#' `vectortilewriterlayers` argument types.
 #'
 #' @concept topics about preparing input values
 #'
