@@ -4,6 +4,8 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 can_build <- qgisprocess::has_qgis() &&
+  # 'grass7' provider label has changed to 'grass' in 3.35 (dev)
+  package_version(qgisprocess::qgis_version(full = FALSE)) >= "3.35.0" &&
   all(qgisprocess::qgis_has_plugin(c(
     "grassprovider",
     "processing_saga_nextgen"
@@ -42,6 +44,9 @@ qgis_providers()
 algs <- qgis_algorithms()
 algs
 
+## ----algs2--------------------------------------------------------------------
+qgis_search_algorithms(algorithm = "buffer", group = "[Vv]ector")
+
 ## ----help, eval=FALSE---------------------------------------------------------
 #  qgis_show_help("native:buffer")
 #  ## Buffer (native:buffer)
@@ -53,7 +58,7 @@ algs
 #  ##
 #  ## The segments parameter controls the number of line segments to use to approximate a quarter circle when creating rounded offsets.
 #  ##
-#  ##...
+#  ## ...
 
 ## ----args-buffer--------------------------------------------------------------
 qgis_get_argument_specs("native:buffer")
@@ -89,28 +94,28 @@ mapview(buf, col.regions = "blue") +
 #  result <- qgis_buffer(INPUT = random_points, DISTANCE = 50)
 
 ## ----desc---------------------------------------------------------------------
-qgis_get_description("grass7:r.slope.aspect")
+qgis_get_description("grass:r.slope.aspect")
 
 ## ----args---------------------------------------------------------------------
-qgis_get_argument_specs("grass7:r.slope.aspect")
+qgis_get_argument_specs("grass:r.slope.aspect")
 
 ## ----outputs------------------------------------------------------------------
-qgis_get_output_specs("grass7:r.slope.aspect")
+qgis_get_output_specs("grass:r.slope.aspect")
 
 ## ----slopeaspect, message=FALSE-----------------------------------------------
 library("terra")
 # attach digital elevation model from Mt. Mongón (Peru)
 dem <- rast(system.file("raster/dem.tif", package = "spDataLarge"))
-# if not already done, enable the grass plugin
+# if not already done, enable the GRASS GIS plugin
 # qgis_enable_plugins("grassprovider")
-info <- qgis_run_algorithm(alg = "grass7:r.slope.aspect", elevation = dem)
+info <- qgis_run_algorithm(alg = "grass:r.slope.aspect", elevation = dem)
 
 ## ----info---------------------------------------------------------------------
 info
 
 ## ----combine1, message=FALSE--------------------------------------------------
 # just keep the names of output rasters
-nms <- qgis_get_output_specs("grass7:r.slope.aspect")$name
+nms <- qgis_get_output_specs("grass:r.slope.aspect")$name
 # read in the output rasters 
 r <- info[nms] |>
   unlist() |>

@@ -2,7 +2,7 @@
 title: "Getting started with qgisprocess"
 author: "Jannes Muenchow & Floris Vanderhaeghe"
 date: |
-  | Last update: 2023-08-16
+  | Last update: 2024-02-21
   | Last run: `r Sys.Date()`
 output:
   html_document: 
@@ -23,6 +23,8 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 can_build <- qgisprocess::has_qgis() &&
+  # 'grass7' provider label has changed to 'grass' in 3.35 (dev)
+  package_version(qgisprocess::qgis_version(full = FALSE)) >= "3.35.0" &&
   all(qgisprocess::qgis_has_plugin(c(
     "grassprovider",
     "processing_saga_nextgen"

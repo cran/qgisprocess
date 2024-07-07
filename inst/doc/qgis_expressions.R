@@ -16,9 +16,8 @@ qgis_get_argument_specs("native:fieldcalculator") |> subset(name == "FORMULA")
 
 ## -----------------------------------------------------------------------------
 qgis_get_argument_specs("native:buffer") |> 
-  subset(name == "DISTANCE") |> 
-  dplyr::select(acceptable_values) |> 
-  tidyr::unnest(cols = acceptable_values) |> 
+  subset(name == "DISTANCE", acceptable_values) |> 
+  tidyr::unnest_longer(acceptable_values) |> 
   knitr::kable()
 
 ## -----------------------------------------------------------------------------

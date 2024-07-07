@@ -50,7 +50,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -340,8 +340,8 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h1 class="title toc-ignore">How to use QGIS expressions in
 qgisprocess?</h1>
 <h4 class="author">Floris Vanderhaeghe &amp; Jannes Muenchow</h4>
-<h4 class="date"><div class="line-block">Last update: 2023-08-16<br />
-Last run: 2024-02-06</div></h4>
+<h4 class="date"><div class="line-block">Last update: 2024-06-26<br />
+Last run: 2024-07-06</div></h4>
 
 
 
@@ -371,10 +371,9 @@ override</a>’ button. An example is provided by the
 <code>DISTANCE</code> argument of <code>native:buffer</code>, for which
 we query the acceptable values below.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">qgis_get_argument_specs</span>(<span class="st">&quot;native:buffer&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">subset</span>(name <span class="sc">==</span> <span class="st">&quot;DISTANCE&quot;</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">select</span>(acceptable_values) <span class="sc">|&gt;</span> </span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest</span>(<span class="at">cols =</span> acceptable_values) <span class="sc">|&gt;</span> </span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">subset</span>(name <span class="sc">==</span> <span class="st">&quot;DISTANCE&quot;</span>, acceptable_values) <span class="sc">|&gt;</span> </span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest_longer</span>(acceptable_values) <span class="sc">|&gt;</span> </span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code></pre></div>
 <table>
 <colgroup>
 <col width="100%" />
@@ -417,33 +416,25 @@ depth. We can simply pass the expression as a string:</p>
 <span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="fu">st_as_sf</span>()</span>
 <span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt; Using `OUTPUT = qgis_tmp_vector()`</span></span>
 <span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; Using `FAIL_OUTPUT = qgis_tmp_vector()`</span></span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; ERROR 1: OGR/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; ERROR 1: GDAL/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; ERROR 1: OGR/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt; ERROR 1: GDAL/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; ERROR 1: OGR/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; ERROR 1: GDAL/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt; ERROR 1: OGR/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt; ERROR 1: GDAL/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt; Simple feature collection with 39 features and 2 fields</span></span>
-<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt; Geometry type: POINT</span></span>
-<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt; Dimension:     XY</span></span>
-<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co">#&gt; Bounding box:  xmin: 410242.8 ymin: 5083519 xmax: 411466.8 ymax: 5084691</span></span>
-<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt; Projected CRS: NAD83 / UTM zone 20N</span></span>
-<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt; # A tibble: 39 × 3</span></span>
-<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt;    WAYPOINT_I DEPTH_M               geom</span></span>
-<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co">#&gt;         &lt;dbl&gt;   &lt;dbl&gt;        &lt;POINT [m]&gt;</span></span>
-<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt;  1          8     1.4 (411466.8 5084488)</span></span>
-<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co">#&gt;  2         12     1.4 (411379.1 5084490)</span></span>
-<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="co">#&gt;  3         17     1.4 (411292.9 5084670)</span></span>
-<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a><span class="co">#&gt;  4         19     1.5 (411290.8 5084593)</span></span>
-<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a><span class="co">#&gt;  5         20     1.5 (411286.8 5084534)</span></span>
-<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a><span class="co">#&gt;  6         24     1.2 (411272.2 5084333)</span></span>
-<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a><span class="co">#&gt;  7         25     1.5 (411244.6 5084420)</span></span>
-<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a><span class="co">#&gt;  8         27     1.6 (411220.3 5084500)</span></span>
-<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a><span class="co">#&gt;  9         29     1.7 (411205.4 5084575)</span></span>
-<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a><span class="co">#&gt; 10         36     1.8 (411133.2 5084691)</span></span>
-<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a><span class="co">#&gt; # ℹ 29 more rows</span></span></code></pre></div>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; Simple feature collection with 39 features and 2 fields</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; Geometry type: POINT</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; Dimension:     XY</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt; Bounding box:  xmin: 410242.8 ymin: 5083519 xmax: 411466.8 ymax: 5084691</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; Projected CRS: NAD83 / UTM zone 20N</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; # A tibble: 39 × 3</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt;    WAYPOINT_I DEPTH_M               geom</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt;         &lt;dbl&gt;   &lt;dbl&gt;        &lt;POINT [m]&gt;</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt;  1          8     1.4 (411466.8 5084488)</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt;  2         12     1.4 (411379.1 5084490)</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt;  3         17     1.4 (411292.9 5084670)</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="co">#&gt;  4         19     1.5 (411290.8 5084593)</span></span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a><span class="co">#&gt;  5         20     1.5 (411286.8 5084534)</span></span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a><span class="co">#&gt;  6         24     1.2 (411272.2 5084333)</span></span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a><span class="co">#&gt;  7         25     1.5 (411244.6 5084420)</span></span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a><span class="co">#&gt;  8         27     1.6 (411220.3 5084500)</span></span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a><span class="co">#&gt;  9         29     1.7 (411205.4 5084575)</span></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a><span class="co">#&gt; 10         36     1.8 (411133.2 5084691)</span></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a><span class="co">#&gt; # ℹ 29 more rows</span></span></code></pre></div>
 <p>More often, you will want to use QGIS functions in expressions, and
 look at the relationship between geometries or create new
 geometries.</p>
@@ -456,13 +447,7 @@ and add it as an attribute to the points. For that we will use the
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>  <span class="at">INPUT =</span> longlake_path</span>
 <span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>) <span class="sc">|&gt;</span> </span>
 <span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="fu">qgis_extract_output</span>(<span class="st">&quot;OUTPUT&quot;</span>)</span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; Using `OUTPUT = qgis_tmp_vector()`</span></span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; ERROR 1: OGR/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; ERROR 1: GDAL/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; ERROR 1: OGR/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; ERROR 1: GDAL/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; ERROR 1: OGR/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; ERROR 1: GDAL/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span></code></pre></div>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; Using `OUTPUT = qgis_tmp_vector()`</span></span></code></pre></div>
 <p>Next, build the QGIS expression. Referring to the <code>INPUT</code>
 geometry in <code>native:fieldcalculator</code> is done with the
 <code>@geometry</code> variable.</p>
@@ -504,31 +489,25 @@ approach since QGIS 3.30.0 avoids the need for a QGIS project.</p>
 <span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; Argument `FIELD_LENGTH` is unspecified (using QGIS default value).</span></span>
 <span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; Argument `FIELD_PRECISION` is unspecified (using QGIS default value).</span></span>
 <span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; Using `OUTPUT = qgis_tmp_vector()`</span></span>
-<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; ERROR 1: OGR/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; ERROR 1: GDAL/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; ERROR 1: OGR/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; ERROR 1: GDAL/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt; ERROR 1: OGR/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt; ERROR 1: GDAL/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt; Simple feature collection with 64 features and 3 fields</span></span>
-<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt; Geometry type: POINT</span></span>
-<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co">#&gt; Dimension:     XY</span></span>
-<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#&gt; Bounding box:  xmin: 409967.1 ymin: 5083354 xmax: 411658.7 ymax: 5084777</span></span>
-<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt; Projected CRS: NAD83 / UTM zone 20N</span></span>
-<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a><span class="co">#&gt; # A tibble: 64 × 4</span></span>
-<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="co">#&gt;    WAYPOINT_I DEPTH_M distance               geom</span></span>
-<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a><span class="co">#&gt;         &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;        &lt;POINT [m]&gt;</span></span>
-<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a><span class="co">#&gt;  1          2     0.8     6.22 (411658.7 5084501)</span></span>
-<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a><span class="co">#&gt;  2          3     0.9    38.6  (411630.3 5084560)</span></span>
-<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a><span class="co">#&gt;  3          5     0.8    46.7  (411553.4 5084601)</span></span>
-<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a><span class="co">#&gt;  4          6     0.8    49.3  (411476.4 5084600)</span></span>
-<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a><span class="co">#&gt;  5          8     1.4   100.   (411466.8 5084488)</span></span>
-<span id="cb9-31"><a href="#cb9-31" tabindex="-1"></a><span class="co">#&gt;  6         10     0.6    25.4  (411466.4 5084410)</span></span>
-<span id="cb9-32"><a href="#cb9-32" tabindex="-1"></a><span class="co">#&gt;  7         12     1.4   140.   (411379.1 5084490)</span></span>
-<span id="cb9-33"><a href="#cb9-33" tabindex="-1"></a><span class="co">#&gt;  8         16     0.8    39.4  (411321.2 5084721)</span></span>
-<span id="cb9-34"><a href="#cb9-34" tabindex="-1"></a><span class="co">#&gt;  9         17     1.4    93.7  (411292.9 5084670)</span></span>
-<span id="cb9-35"><a href="#cb9-35" tabindex="-1"></a><span class="co">#&gt; 10         19     1.5   150.   (411290.8 5084593)</span></span>
-<span id="cb9-36"><a href="#cb9-36" tabindex="-1"></a><span class="co">#&gt; # ℹ 54 more rows</span></span></code></pre></div>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="co">#&gt; Simple feature collection with 64 features and 3 fields</span></span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt; Geometry type: POINT</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="co">#&gt; Dimension:     XY</span></span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a><span class="co">#&gt; Bounding box:  xmin: 409967.1 ymin: 5083354 xmax: 411658.7 ymax: 5084777</span></span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt; Projected CRS: NAD83 / UTM zone 20N</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="co">#&gt; # A tibble: 64 × 4</span></span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt;    WAYPOINT_I DEPTH_M distance               geom</span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a><span class="co">#&gt;         &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;        &lt;POINT [m]&gt;</span></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="co">#&gt;  1          2     0.8     6.22 (411658.7 5084501)</span></span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#&gt;  2          3     0.9    38.6  (411630.3 5084560)</span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt;  3          5     0.8    46.7  (411553.4 5084601)</span></span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a><span class="co">#&gt;  4          6     0.8    49.3  (411476.4 5084600)</span></span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="co">#&gt;  5          8     1.4   100.   (411466.8 5084488)</span></span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a><span class="co">#&gt;  6         10     0.6    25.4  (411466.4 5084410)</span></span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a><span class="co">#&gt;  7         12     1.4   140.   (411379.1 5084490)</span></span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a><span class="co">#&gt;  8         16     0.8    39.4  (411321.2 5084721)</span></span>
+<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a><span class="co">#&gt;  9         17     1.4    93.7  (411292.9 5084670)</span></span>
+<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a><span class="co">#&gt; 10         19     1.5   150.   (411290.8 5084593)</span></span>
+<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a><span class="co">#&gt; # ℹ 54 more rows</span></span></code></pre></div>
 </div>
 <div id="example-applying-a-data-defined-override" class="section level1">
 <h1>Example applying a data-defined override</h1>
@@ -554,13 +533,7 @@ fields (attributes), but you can also omit them.</p>
 <span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="co">#&gt; Argument `MITER_LIMIT` is unspecified (using QGIS default value).</span></span>
 <span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="co">#&gt; Argument `DISSOLVE` is unspecified (using QGIS default value).</span></span>
 <span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co">#&gt; Argument `SEPARATE_DISJOINT` is unspecified (using QGIS default value).</span></span>
-<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="co">#&gt; Using `OUTPUT = qgis_tmp_vector()`</span></span>
-<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="co">#&gt; ERROR 1: OGR/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a><span class="co">#&gt; ERROR 1: GDAL/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a><span class="co">#&gt; ERROR 1: OGR/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a><span class="co">#&gt; ERROR 1: GDAL/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a><span class="co">#&gt; ERROR 1: OGR/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span>
-<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a><span class="co">#&gt; ERROR 1: GDAL/GRASS driver was compiled against GDAL 3.8, but the current library version is 3.6</span></span></code></pre></div>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="co">#&gt; Using `OUTPUT = qgis_tmp_vector()`</span></span></code></pre></div>
 <p>So from the 64 points we have created 64 polygons:</p>
 <div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">st_geometry_type</span>(buffer) <span class="sc">|&gt;</span> <span class="fu">as.character</span>() <span class="sc">|&gt;</span> <span class="fu">table</span>()</span>
 <span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
