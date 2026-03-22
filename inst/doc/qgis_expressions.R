@@ -80,14 +80,14 @@ plot(buffer[, "DEPTH_M"], add = TRUE)
 par(oldpar)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  qgis_run_algorithm(
-#    "native:buffer",
-#    INPUT = longlake_depth_path,
-#    DISTANCE = "field:DEPTH_M"
-#  ) |>
-#    st_as_sf()
+# qgis_run_algorithm(
+#   "native:buffer",
+#   INPUT = longlake_depth_path,
+#   DISTANCE = "field:DEPTH_M"
+# ) |>
+#   st_as_sf()
 
 ## ----eval=!can_build, echo=FALSE, results="asis"------------------------------
-#  cat("This vignette has been built in absence of a QGIS installation with version >= 3.30.0, or in absence of the sf package.\n\n")
-#  cat("Read it online at <https://r-spatial.github.io/qgisprocess/articles/qgis_expressions.html>.")
+# cat("This vignette has been built in absence of a QGIS installation with version >= 3.30.0, or in absence of the sf package.\n\n")
+# cat("Read it online at <https://r-spatial.github.io/qgisprocess/articles/qgis_expressions.html>.")
 

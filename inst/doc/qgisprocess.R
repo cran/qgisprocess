@@ -22,11 +22,11 @@ library("qgisprocess")
 qgis_configure(use_cached_data = TRUE)
 
 ## ----win-config, eval=FALSE---------------------------------------------------
-#  # specify path to QGIS installation on Windows
-#  options(qgisprocess.path = "C:/Program Files/QGIS 3.28/bin/qgis_process-qgis.bat")
-#  # or use the QGIS nightly version (if installed via OSGeo4W)
-#  # options(qgisprocess.path = "C:/OSGeo4W64/bin/qgis_process-qgis-dev.bat")
-#  qgis_configure() # or use library(qgisprocess) if package was not loaded yet
+# # specify path to QGIS installation on Windows
+# options(qgisprocess.path = "C:/Program Files/QGIS 3.28/bin/qgis_process-qgis.bat")
+# # or use the QGIS nightly version (if installed via OSGeo4W)
+# # options(qgisprocess.path = "C:/OSGeo4W64/bin/qgis_process-qgis-dev.bat")
+# qgis_configure() # or use library(qgisprocess) if package was not loaded yet
 
 ## ----vers---------------------------------------------------------------------
 qgis_version()
@@ -48,17 +48,17 @@ algs
 qgis_search_algorithms(algorithm = "buffer", group = "[Vv]ector")
 
 ## ----help, eval=FALSE---------------------------------------------------------
-#  qgis_show_help("native:buffer")
-#  ## Buffer (native:buffer)
-#  ##
-#  ## ----------------
-#  ## Description
-#  ## ----------------
-#  ## This algorithm computes a buffer area for all the features in an input layer, using a fixed or dynamic distance.
-#  ##
-#  ## The segments parameter controls the number of line segments to use to approximate a quarter circle when creating rounded offsets.
-#  ##
-#  ## ...
+# qgis_show_help("native:buffer")
+# ## Buffer (native:buffer)
+# ##
+# ## ----------------
+# ## Description
+# ## ----------------
+# ## This algorithm computes a buffer area for all the features in an input layer, using a fixed or dynamic distance.
+# ##
+# ## The segments parameter controls the number of line segments to use to approximate a quarter circle when creating rounded offsets.
+# ##
+# ## ...
 
 ## ----args-buffer--------------------------------------------------------------
 qgis_get_argument_specs("native:buffer")
@@ -88,10 +88,10 @@ mapview(buf, col.regions = "blue") +
   mapview(random_points, col.regions = "red", cex = 3)
 
 ## ----function-creation, eval=FALSE--------------------------------------------
-#  # create a function
-#  qgis_buffer <- qgis_function("native:buffer")
-#  # run the function
-#  result <- qgis_buffer(INPUT = random_points, DISTANCE = 50)
+# # create a function
+# qgis_buffer <- qgis_function("native:buffer")
+# # run the function
+# result <- qgis_buffer(INPUT = random_points, DISTANCE = 50)
 
 ## ----desc---------------------------------------------------------------------
 qgis_get_description("grass:r.slope.aspect")
@@ -126,8 +126,8 @@ names(r) <- nms
 plot(r)
 
 ## ----combine2, message=FALSE, eval=FALSE--------------------------------------
-#  r <- lapply(info[nms], \(x) as.numeric(qgis_as_terra(x))) |>
-#    rast()
+# r <- lapply(info[nms], \(x) as.numeric(qgis_as_terra(x))) |>
+#   rast()
 
 ## ----addrastertopoints-args---------------------------------------------------
 qgis_get_argument_specs("sagang:addrastervaluestopoints")
@@ -142,15 +142,15 @@ rp_tp <- qgis_run_algorithm(
   RESAMPLING = 0)
 
 ## ----multilayer-list, eval=FALSE----------------------------------------------
-#  rp_tp <- qgis_run_algorithm(
-#    "sagang:addrastervaluestopoints",
-#    SHAPES = random_points,
-#    GRIDS = qgis_list_input(
-#      qgis_extract_output(info, "aspect"),
-#      qgis_extract_output(info, "slope"),
-#      qgis_extract_output(info, "tcurvature")
-#    ),
-#    RESAMPLING = 0)
+# rp_tp <- qgis_run_algorithm(
+#   "sagang:addrastervaluestopoints",
+#   SHAPES = random_points,
+#   GRIDS = qgis_list_input(
+#     qgis_extract_output(info, "aspect"),
+#     qgis_extract_output(info, "slope"),
+#     qgis_extract_output(info, "tcurvature")
+#   ),
+#   RESAMPLING = 0)
 
 ## ----multilayer-output--------------------------------------------------------
 sf::st_as_sf(rp_tp)
@@ -186,6 +186,6 @@ result <- qgis_run_algorithm(algorithm = "sagang:sinkremoval", DEM = dem,
 options(oldopt)
 
 ## ----eval=!can_build, echo=FALSE, results="asis"------------------------------
-#  cat("This vignette has been built in absence of a QGIS installation, with a missing QGIS plugin, or in absence of the spDataLarge, sf, terra or mapview package.\n\n")
-#  cat("Read it online at <https://r-spatial.github.io/qgisprocess/articles/qgisprocess.html>.")
+# cat("This vignette has been built in absence of a QGIS installation, with a missing QGIS plugin, or in absence of the spDataLarge, sf, terra or mapview package.\n\n")
+# cat("Read it online at <https://r-spatial.github.io/qgisprocess/articles/qgisprocess.html>.")
 

@@ -36,9 +36,10 @@
 #' qgis_plugins(which = "disabled")
 #'
 qgis_algorithms <- function(
-    query = FALSE,
-    quiet = TRUE,
-    include_deprecated = TRUE) {
+  query = FALSE,
+  quiet = TRUE,
+  include_deprecated = TRUE
+) {
   assert_that(is.flag(query), noNA(query))
   assert_that(is.flag(quiet), noNA(quiet))
   assert_that(is.flag(include_deprecated), noNA(include_deprecated))
@@ -61,9 +62,10 @@ qgis_algorithms <- function(
 #' @rdname qgis_algorithms
 #' @export
 qgis_providers <- function(
-    query = FALSE,
-    quiet = TRUE,
-    include_deprecated = TRUE) {
+  query = FALSE,
+  quiet = TRUE,
+  include_deprecated = TRUE
+) {
   algs <- qgis_algorithms(
     query = query,
     quiet = quiet,
@@ -119,7 +121,6 @@ check_algorithm_deprecation <- function(algorithm, skip = FALSE) {
 }
 
 
-
 #' @keywords internal
 algorithm_is_native <- function(algorithm) {
   stringr::str_match(algorithm, "^(\\w+):.*")[, 2] %in%
@@ -142,6 +143,7 @@ qgis_query_algorithms <- function(quiet = FALSE) {
 
     providers_ptype <- tibble::tibble(
       provider_can_be_activated = logical(),
+      default_raster_file_format = character(),
       default_raster_file_extension = character(),
       default_vector_file_extension = character(),
       provider_is_active = logical(),
@@ -257,7 +259,6 @@ qgis_query_algorithms <- function(quiet = FALSE) {
 }
 
 
-
 #' Search geoprocessing algorithms
 #'
 #' Searches for algorithms using a regular expression.
@@ -280,6 +281,8 @@ qgis_query_algorithms <- function(quiet = FALSE) {
 #' `provider_title` value from the output of [qgis_algorithms()].
 #' @param group Regular expression to match the `group` value
 #' from the output of [qgis_algorithms()].
+#' This is only supported for the JSON output method (see
+#' [qgis_using_json_output()]).
 #' @inheritParams qgis_algorithms
 #'
 #' @returns A tibble.
@@ -292,10 +295,11 @@ qgis_query_algorithms <- function(quiet = FALSE) {
 #'
 #' @export
 qgis_search_algorithms <- function(
-    algorithm = NULL,
-    provider = NULL,
-    group = NULL,
-    include_deprecated = FALSE) {
+  algorithm = NULL,
+  provider = NULL,
+  group = NULL,
+  include_deprecated = FALSE
+) {
   assert_that(
     !is.null(algorithm) || !is.null(provider) || !is.null(group),
     msg = "You must provide at least one of the arguments."
@@ -310,13 +314,24 @@ qgis_search_algorithms <- function(
     nrow(result) > 0L,
     msg = "qgis_algorithms() returns an empty dataframe; no searching done."
   )
-  result <- result[, c(
-    "provider",
-    "provider_title",
-    "group",
-    "algorithm",
-    "algorithm_title"
-  )]
+  if (
+    qgis_using_json_output()
+  ) {
+    result <- result[, c(
+      "provider",
+      "provider_title",
+      "group",
+      "algorithm",
+      "algorithm_title"
+    )]
+  } else {
+    result <- result[, c(
+      "provider",
+      "provider_title",
+      "algorithm",
+      "algorithm_title"
+    )]
+  }
   if (!is.null(algorithm)) {
     assert_that(is.string(algorithm))
     result <- result[
@@ -332,8 +347,15 @@ qgis_search_algorithms <- function(
     ]
   }
   if (!is.null(group)) {
-    assert_that(is.string(group))
-    result <- result[stringr::str_detect(result$group, group), ]
+    if (qgis_using_json_output()) {
+      assert_that(is.string(group))
+      result <- result[stringr::str_detect(result$group, group), ]
+    } else {
+      message(
+        "Ignoring the `group` argument since the JSON output setting is FALSE.",
+        "\nSee `?qgis_using_json_output`."
+      )
+    }
   }
   result
 }
